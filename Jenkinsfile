@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('📥 Clone Repository') {
             steps {
-                git 'https://github.com/Krishna8123/Web-buddy.git'
+                 git branch: 'main', url: 'https://github.com/Krishna8123/Web-buddy.git'
             }
         }
 
