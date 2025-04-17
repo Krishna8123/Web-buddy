@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hi, I'm Your Web Buddy!</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive;
+      background: linear-gradient(to right, #f9f9f9, #e0f7fa);
+      text-align: center;
+      padding: 100px 20px;
+      color: #333;
+    }
+    #buddy-face {
+      font-size: 100px;
+      margin: 20px;
+      transition: transform 0.3s;
+    }
+    button {
+      font-size: 18px;
+      padding: 10px 20px;
+      border: none;
+      background: #00796b;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #004d40;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 id="greeting">Hello, buddy!</h1>
+  <div id="buddy-face">😊</div>
+  <button onclick="changeMood()">Change Mood</button>
+
+  <script>
+    let moods = ['😊', '😂', '😴', '😎', '😡', '😭', '🤖'];
+    let index = 0;
+
+    function changeMood() {
+      index = (index + 1) % moods.length;
+      document.getElementById('buddy-face').textContent = moods[index];
+    }
+
+    // Greeting based on time
+    const hour = new Date().getHours();
+    let message = "Hello, buddy!";
+    if (hour < 12) message = "Good morning, buddy! 🌞";
+    else if (hour < 18) message = "Good afternoon, buddy! 🌤️";
+    else message = "Good evening, buddy! 🌙";
+    document.getElementById('greeting').textContent = message;
+  </script>
+
+</body>
+</html>
