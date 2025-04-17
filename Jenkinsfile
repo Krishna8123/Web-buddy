@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'krishna8123/web-buddy'
+        IMAGE_NAME = 'kr812/web-buddy'
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials') // you must create this in Jenkins > Manage Credentials
     }
 
