@@ -2,48 +2,44 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'krishna8123/web-buddy'
-        DOCKER_TAG = 'latest'
+        IMAGE_NAME = 'krishna8123/web-buddy'
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials') // you must create this in Jenkins > Manage Credentials
     }
 
     stages {
         stage('📥 Clone Repository') {
             steps {
-                git url: 'https://github.com/Krishna8123/Web-buddy.git', branch: 'main'
+                git 'https://github.com/Krishna8123/Web-buddy.git'
             }
         }
 
-        stage('🏗️ Build Docker Image') {
+        stage('📦 Build Docker Image') {
             steps {
-                script {
-                    dockerImage = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                }
+                bat "docker build -t %IMAGE_NAME% ."
             }
         }
 
         stage('🔐 Login & Push to Docker Hub') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
-                        dockerImage.push()
-                    }
-                }
+                bat "docker login -u %DOCKERHUB_CREDENTIALS_USR% -p %DOCKERHUB_CREDENTIALS_PSW%"
+                bat "docker push %IMAGE_NAME%"
             }
         }
 
         stage('🧹 Cleanup') {
             steps {
-                sh 'docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || exit 0'
+                bat "docker logout"
+                bat "docker rmi %IMAGE_NAME%"
             }
         }
     }
 
     post {
         failure {
-            echo "❌ Something went wrong..."
+            echo '❌ Something went wrong...'
         }
         success {
-            echo "✅ Pipeline completed successfully!"
+            echo '✅ Deployment successful!'
         }
     }
 }
