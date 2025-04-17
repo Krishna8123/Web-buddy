@@ -1,48 +1,49 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = 'krishna8123/web-buddy'
+        DOCKER_TAG = 'latest'
+    }
+
     stages {
-        stage('📦 Clone Repository') {
+        stage('📥 Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/Krishna8123/Web-buddy.git'
+                git url: 'https://github.com/Krishna8123/Web-buddy.git', branch: 'main'
             }
         }
 
-        stage('🛠️ Build Docker Image') {
+        stage('🏗️ Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("krishna8123/web-buddy:${BUILD_NUMBER}")
+                    dockerImage = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
                 }
             }
         }
 
         stage('🔐 Login & Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    script {
-                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
                         dockerImage.push()
                     }
                 }
             }
         }
 
-        stage('🚮 Logout & Cleanup') {
+        stage('🧹 Cleanup') {
             steps {
-                script {
-                    sh 'docker logout'
-                    sh 'docker rmi krishna8123/web-buddy:${BUILD_NUMBER}'
-                }
+                sh 'docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || exit 0'
             }
         }
     }
 
     post {
         failure {
-            echo '❌ Something went wrong...'
+            echo "❌ Something went wrong..."
         }
         success {
-            echo '✅ Build and push completed successfully!'
+            echo "✅ Pipeline completed successfully!"
         }
     }
 }
