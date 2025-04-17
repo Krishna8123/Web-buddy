@@ -1,47 +1,47 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_HUB_CREDENTIALS = credentials('dockerhub') // Your Jenkins credential ID for Docker Hub
+        IMAGE_NAME = 'krishna8123/web-buddy'
+        TAG = 'latest'
+    }
+
     stages {
-        stage('📥 Clone Repository') {
+        stage('📦 Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/Krishna8123/web-buddy.git'
+                git 'https://github.com/Krishna8123/Web-buddy.git'
             }
         }
 
-        stage('🐳 Build Docker Image') {
+        stage('🏗️ Build Docker Image') {
             steps {
-                script {
-                    sh 'docker build -t kri812/web-buddy .'
-                }
+                bat '''
+                    docker build -t %IMAGE_NAME%:%TAG% .
+                '''
             }
         }
 
         stage('🔐 Login & Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'Dockerhub', 
-                    usernameVariable: 'DOCKER_USER', 
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push kri812/web-buddy
-                    '''
-                }
+                bat '''
+                    echo %DOCKER_HUB_CREDENTIALS_PSW% | docker login -u %DOCKER_HUB_CREDENTIALS_USR% --password-stdin
+                    docker push %IMAGE_NAME%:%TAG%
+                '''
             }
         }
 
         stage('🚿 Logout & Cleanup') {
             steps {
-                sh 'docker logout'
+                bat '''
+                    docker logout
+                    docker rmi %IMAGE_NAME%:%TAG%
+                '''
             }
         }
     }
 
     post {
-        success {
-            echo '🎉 Web Buddy Docker Image Successfully Built and Pushed!'
-        }
         failure {
             echo '❌ Something went wrong...'
         }
