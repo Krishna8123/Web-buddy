@@ -25,7 +25,7 @@ pipeline {
                 )]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push kri812e/web-buddy
+                        docker push kri812/web-buddy
                     '''
                 }
             }
