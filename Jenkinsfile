@@ -1,42 +1,38 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_HUB_CREDENTIALS = credentials('Dockerhub') // Your Jenkins credential ID for Docker Hub
-        IMAGE_NAME = 'krishna8123/web-buddy'
-        TAG = 'latest'
-    }
-
     stages {
         stage('📦 Clone Repository') {
             steps {
-                git 'https://github.com/Krishna8123/Web-buddy.git'
+                git branch: 'main', url: 'https://github.com/Krishna8123/Web-buddy.git'
             }
         }
 
-        stage('🏗️ Build Docker Image') {
+        stage('🛠️ Build Docker Image') {
             steps {
-                bat '''
-                    docker build -t %IMAGE_NAME%:%TAG% .
-                '''
+                script {
+                    dockerImage = docker.build("krishna8123/web-buddy:${BUILD_NUMBER}")
+                }
             }
         }
 
         stage('🔐 Login & Push to Docker Hub') {
             steps {
-                bat '''
-                    echo %DOCKER_HUB_CREDENTIALS_PSW% | docker login -u %DOCKER_HUB_CREDENTIALS_USR% --password-stdin
-                    docker push %IMAGE_NAME%:%TAG%
-                '''
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    script {
+                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                        dockerImage.push()
+                    }
+                }
             }
         }
 
-        stage('🚿 Logout & Cleanup') {
+        stage('🚮 Logout & Cleanup') {
             steps {
-                bat '''
-                    docker logout
-                    docker rmi %IMAGE_NAME%:%TAG%
-                '''
+                script {
+                    sh 'docker logout'
+                    sh 'docker rmi krishna8123/web-buddy:${BUILD_NUMBER}'
+                }
             }
         }
     }
@@ -44,6 +40,9 @@ pipeline {
     post {
         failure {
             echo '❌ Something went wrong...'
+        }
+        success {
+            echo '✅ Build and push completed successfully!'
         }
     }
 }
